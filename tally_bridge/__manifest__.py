@@ -16,6 +16,7 @@ Compatible with Odoo 19 Community and Enterprise editions.
         "views/tally_config_views.xml",
         "views/tally_mapping_views.xml",
         "views/tally_sync_queue_views.xml",
+        "views/tally_menus.xml",
     ],
     "installable": True,
     "application": True,
