@@ -1,0 +1,11 @@
+<odoo noupdate="1">
+    <record id="ir_cron_tally_retry_failed" model="ir.cron">
+        <field name="name">Tally: Retry Failed Queue</field>
+        <field name="model_id" ref="model_tally_sync_queue"/>
+        <field name="state">code</field>
+        <field name="code">model.search([('state','=','failed')]).write({'state': 'pending'})</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="active">True</field>
+    </record>
+</odoo>
