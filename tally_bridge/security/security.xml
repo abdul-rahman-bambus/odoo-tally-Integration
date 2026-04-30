@@ -1,10 +1,19 @@
 <odoo>
+    <record id="module_category_tally_bridge" model="ir.module.category">
+        <field name="name">Tally Bridge</field>
+        <field name="description">Access roles for Odoo to Tally integration.</field>
+        <field name="sequence">45</field>
+    </record>
+
     <record id="group_tally_bridge_user" model="res.groups">
         <field name="name">Tally Bridge User</field>
+        <field name="category_id" ref="tally_bridge.module_category_tally_bridge"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
     <record id="group_tally_bridge_manager" model="res.groups">
         <field name="name">Tally Bridge Manager</field>
+        <field name="category_id" ref="tally_bridge.module_category_tally_bridge"/>
         <field name="implied_ids" eval="[(4, ref('tally_bridge.group_tally_bridge_user'))]"/>
     </record>
 </odoo>
