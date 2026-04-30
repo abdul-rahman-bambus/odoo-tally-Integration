@@ -3,14 +3,14 @@
         <field name="name">tally.config.tree</field>
         <field name="model">tally.config</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name"/>
                 <field name="company_id"/>
                 <field name="agent_url"/>
                 <field name="batch_limit"/>
                 <field name="retry_limit"/>
                 <field name="active"/>
-            </tree>
+            </list>
         </field>
     </record>
 </odoo>
