@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_tally_config_manager,tally.config manager,model_tally_config,tally_bridge.group_tally_bridge_manager,1,1,1,1
+access_tally_mapping_user,tally.mapping user,model_tally_mapping,tally_bridge.group_tally_bridge_user,1,0,0,0
+access_tally_mapping_manager,tally.mapping manager,model_tally_mapping,tally_bridge.group_tally_bridge_manager,1,1,1,1
+access_tally_sync_queue_user,tally.sync.queue user,model_tally_sync_queue,tally_bridge.group_tally_bridge_user,1,0,0,0
+access_tally_sync_queue_manager,tally.sync.queue manager,model_tally_sync_queue,tally_bridge.group_tally_bridge_manager,1,1,1,1
