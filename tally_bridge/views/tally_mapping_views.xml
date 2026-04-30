@@ -1,0 +1,16 @@
+<odoo>
+    <record id="view_tally_mapping_tree" model="ir.ui.view">
+        <field name="name">tally.mapping.tree</field>
+        <field name="model">tally.mapping</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="company_id"/>
+                <field name="odoo_model"/>
+                <field name="odoo_key"/>
+                <field name="tally_value"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+</odoo>
