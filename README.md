@@ -400,3 +400,81 @@ Implemented baseline:
 - Initial list views for config, mapping, and queue
 
 Next step: implement entity-specific queue creation hooks, starting with **Customers**.
+
+## 15) Post-Installation Next Steps
+
+After installing the **Tally Bridge** app in Odoo 19, complete these steps before expecting sync records to move to TallyPrime.
+
+### 15.1 Assign user access
+
+1. Open **Settings → Users & Companies → Users**.
+2. Select the integration/admin user.
+3. In **Access Rights**, assign one of the **Tally Bridge** roles:
+   - **Tally Bridge User** — can view sync queue records.
+   - **Tally Bridge Manager** — can configure the bridge, mappings, and queue.
+4. Save the user and refresh the browser if the menu is not immediately visible.
+
+### 15.2 Create the Tally Bridge configuration
+
+1. Open **Tally Bridge → Configuration → Configurations**.
+2. Create one active configuration for the company.
+3. Fill these values:
+   - **Company** — target Odoo company.
+   - **API Token** — shared secret used by the local agent in the `X-API-Token` header.
+   - **Agent URL** — local agent URL for reference/operations.
+   - **Batch Limit** — number of queue records returned per poll.
+   - **Retry Limit** — maximum retry count before manual handling.
+   - **Poll Interval** — expected agent polling frequency.
+
+### 15.3 Maintain mappings
+
+Open **Tally Bridge → Configuration → Mappings** and create mappings for masters that must match Tally naming exactly, such as:
+- Customer/vendor ledger names
+- Sales and purchase ledgers
+- Tax ledgers
+- Bank/cash ledgers
+- Tally groups where required
+
+### 15.4 Start with one test queue record
+
+Before building every entity hook, create or generate one queue entry for a simple customer/vendor payload and verify the lifecycle:
+
+1. Queue record is created as `pending`.
+2. Agent calls `GET /tally/pending` with the configured token.
+3. Queue record moves to `processing`.
+4. Agent posts XML to TallyPrime.
+5. Agent calls `POST /tally/result`.
+6. Queue record moves to `done` or `failed`.
+
+### 15.5 Run the local Tally agent
+
+The Odoo module only prepares queue/API side. The local agent still needs to be created or started separately on the Tally machine/network.
+
+Required agent behavior:
+- Poll Odoo using `GET /tally/pending`.
+- Convert Odoo payload JSON into Tally XML.
+- Post XML to `http://localhost:9000` where TallyPrime is running.
+- Post result back using `POST /tally/result`.
+
+### 15.6 Recommended development order from here
+
+Implement the remaining Phase-1 pieces one by one:
+
+1. Customer/vendor queue creation hooks.
+2. Ledger and tax queue creation hooks.
+3. Local agent customer/vendor XML conversion.
+4. Sales invoice and purchase bill queue hooks.
+5. Payment, credit note, and debit note hooks.
+6. Retry/dead-letter refinement and reconciliation reports.
+
+## 16) Phase 1B: Customer/Vendor Queue Hooks
+
+Phase 1B does **not** require live Tally credentials. At this stage, the module only needs Odoo-side configuration and queue creation so records can be prepared for the local agent.
+
+Implemented in Phase 1B:
+- Customer and vendor contacts automatically create/update a `tally.sync.queue` job.
+- Queue payloads include partner identity, role (`customer`/`vendor`), contact details, tax/VAT, and address data.
+- Existing partner queue jobs are refreshed instead of duplicated, using `external_guid = res.partner:<id>`.
+- A sequence is added for readable queue references.
+
+Tally connectivity is required later when validating the local agent and XML posting to TallyPrime.
