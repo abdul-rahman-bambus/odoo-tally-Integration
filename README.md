@@ -380,6 +380,7 @@ Create queue jobs when these records are posted/validated:
 ### 13.9 Definition of done for module
 
 - Queue records are created for all Phase-1 entities.
+- Phase 1B customer hooks enqueue top-level `res.partner` customer records when customer-facing fields change.
 - `GET /tally/pending` and `POST /tally/result` are stable and documented.
 - Retries and dead-letter behavior work as configured.
 - Audit trail can answer: what was sent, when, by whom, and with what result.
@@ -391,6 +392,7 @@ This project should be delivered in controlled phases so each milestone can be i
 
 ### Phase 1A — Odoo Bridge Foundation (**Completed / Archive Candidate**)
 
+<<<<<<< HEAD
 Goal: create an installable Odoo 19 addon that provides the base integration framework without requiring live Tally connectivity.
 
 Completed in Phase 1A:
@@ -581,3 +583,10 @@ Implemented/targeted in Phase 1B:
 - A sequence is available for readable queue references.
 
 Tally connectivity is required later when validating the local agent and XML posting to TallyPrime.
+
+Phase 1B customer hook status:
+- Top-level `res.partner` customers (`customer_rank > 0`) are queued automatically after creation and after customer-facing field updates.
+- Customer payload snapshots include company, identity, contact details, address details, and the company-specific receivable account.
+- Queue creation is idempotent by `external_guid`, so later customer edits refresh the existing queue job and return it to `pending` for agent pickup.
+
+Next step: extend entity-specific queue hooks to **Vendors** and **Ledgers**.

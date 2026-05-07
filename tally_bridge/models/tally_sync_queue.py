@@ -46,23 +46,28 @@ class TallySyncQueue(models.Model):
         return super().create(vals_list)
 
     @api.model
-    def enqueue_record(self, record, payload, operation="create"):
+    def enqueue_record(self, record, operation, payload):
+        company = (
+            record.company_id if "company_id" in record._fields else self.env.company
+        )
+        company = company or self.env.company
         external_guid = f"{record._name}:{record.id}"
         values = {
-            "company_id": record.company_id.id if "company_id" in record._fields and record.company_id else self.env.company.id,
+            "company_id": company.id,
             "odoo_model": record._name,
             "record_id": record.id,
             "operation": operation,
             "external_guid": external_guid,
-            "payload_json": json.dumps(payload, default=str),
+            "payload_json": json.dumps(payload, sort_keys=True),
             "state": "pending",
-            "attempt_count": 0,
             "next_retry_at": False,
             "last_error": False,
             "processed_at": False,
+            "tally_reference": False,
+            "attempt_count": 0,
         }
-        queue = self.search([("external_guid", "=", external_guid)], limit=1)
-        if queue:
-            queue.write(values)
-            return queue
+        existing = self.search([("external_guid", "=", external_guid)], limit=1)
+        if existing:
+            existing.write(values)
+            return existing
         return self.create(values)
