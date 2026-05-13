@@ -1,0 +1,58 @@
+<odoo>
+    <record id="tally_config_demo" model="tally.config">
+        <field name="name">Demo Tally Agent Configuration</field>
+        <field name="active">True</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="api_token">demo-tally-token-change-me</field>
+        <field name="agent_url">http://localhost:8000</field>
+        <field name="batch_limit">10</field>
+        <field name="retry_limit">3</field>
+        <field name="poll_interval_sec">30</field>
+    </record>
+
+    <record id="tally_mapping_customer_group" model="tally.mapping">
+        <field name="name">Customers / Sundry Debtors</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="odoo_model">res.partner</field>
+        <field name="odoo_key">customer_group</field>
+        <field name="tally_value">Sundry Debtors</field>
+    </record>
+
+    <record id="tally_mapping_receivable_account" model="tally.mapping">
+        <field name="name">Account Receivable / Sundry Debtors</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="odoo_model">account.account</field>
+        <field name="odoo_key">account_receivable</field>
+        <field name="tally_value">Sundry Debtors</field>
+    </record>
+
+    <record id="tally_mapping_tax_gst_output" model="tally.mapping">
+        <field name="name">Output GST 18%</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="odoo_model">account.tax</field>
+        <field name="odoo_key">output_gst_18</field>
+        <field name="tally_value">Output GST @ 18%</field>
+    </record>
+
+    <record id="res_partner_tally_demo_customer" model="res.partner">
+        <field name="name">Tally Demo Customer Pvt Ltd</field>
+        <field name="customer_rank">1</field>
+        <field name="street">221B Integration Street</field>
+        <field name="street2">Phase 1B Test Block</field>
+        <field name="city">Bengaluru</field>
+        <field name="zip">560001</field>
+        <field name="country_id" ref="base.in"/>
+        <field name="vat">29ABCDE1234F1Z5</field>
+        <field name="email">accounts.customer@example.com</field>
+        <field name="phone">+91 80 4000 1000</field>
+        <field name="mobile">+91 90000 10000</field>
+    </record>
+
+    <record id="res_partner_tally_demo_non_customer" model="res.partner">
+        <field name="name">Tally Demo Prospect - Not Queued</field>
+        <field name="street">No Queue Avenue</field>
+        <field name="city">Bengaluru</field>
+        <field name="country_id" ref="base.in"/>
+        <field name="email">prospect@example.com</field>
+    </record>
+</odoo>

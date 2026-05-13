@@ -392,7 +392,6 @@ This project should be delivered in controlled phases so each milestone can be i
 
 ### Phase 1A — Odoo Bridge Foundation (**Completed / Archive Candidate**)
 
-<<<<<<< HEAD
 Goal: create an installable Odoo 19 addon that provides the base integration framework without requiring live Tally connectivity.
 
 Completed in Phase 1A:
@@ -588,5 +587,16 @@ Phase 1B customer hook status:
 - Top-level `res.partner` customers (`customer_rank > 0`) are queued automatically after creation and after customer-facing field updates.
 - Customer payload snapshots include company, identity, contact details, address details, and the company-specific receivable account.
 - Queue creation is idempotent by `external_guid`, so later customer edits refresh the existing queue job and return it to `pending` for agent pickup.
+
+Phase 1B customer hook status:
+- Top-level `res.partner` customers (`customer_rank > 0`) are queued automatically after creation and after customer-facing field updates.
+- Customer payload snapshots include company, identity, contact details, address details, and the company-specific receivable account.
+- Queue creation is idempotent by `external_guid`, so later customer edits refresh the existing queue job and return it to `pending` for agent pickup.
+- Demo configuration, sample customer data, and functional test scenarios are available in `docs/TALLY_BRIDGE_TEST_DATA.md`.
+
+Test coverage added:
+- Customer creation enqueues a pending job with a payload snapshot.
+- Customer updates refresh the existing queue job instead of creating duplicates.
+- Prospects, child contacts, and irrelevant partner updates do not enqueue customer jobs.
 
 Next step: extend entity-specific queue hooks to **Vendors** and **Ledgers**.

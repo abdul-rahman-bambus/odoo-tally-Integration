@@ -85,3 +85,4 @@ class ResPartner(models.Model):
             if receivable_account
             else False,
         }
+
