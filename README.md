@@ -386,19 +386,207 @@ Create queue jobs when these records are posted/validated:
 - Audit trail can answer: what was sent, when, by whom, and with what result.
 
 
-## 14) Current Implementation Status (Phase 1 Started)
+## 14) Project Phase Roadmap
 
-A starter Odoo addon `tally_bridge` is now scaffolded for **Odoo 19** and designed to work with both:
-- **Odoo 19 Community**
-- **Odoo 19 Enterprise**
+This project should be delivered in controlled phases so each milestone can be installed, reviewed, tested, and archived before moving to the next scope.
 
-Implemented baseline:
-- Manifest + module init
-- Core models: `tally.config`, `tally.mapping`, `tally.sync.queue`
-- API controllers for `GET /tally/pending` and `POST /tally/result`
-- Security groups + model access file
-- Basic queue retry cron
-- Initial list views for config, mapping, and queue
+### Phase 1A — Odoo Bridge Foundation (**Completed / Archive Candidate**)
+
+Goal: create an installable Odoo 19 addon that provides the base integration framework without requiring live Tally connectivity.
+
+Completed in Phase 1A:
+- Odoo addon scaffold: `tally_bridge`.
+- Odoo 19 compatibility for both **Community** and **Enterprise** editions.
+- Core models:
+  - `tally.config` for integration settings.
+  - `tally.mapping` for Odoo-to-Tally name/code mapping.
+  - `tally.sync.queue` for outbound sync jobs and audit state.
+- Security setup:
+  - Tally Bridge User group.
+  - Tally Bridge Manager group.
+  - Tally Bridge access-rights category for user assignment.
+  - Model access rules.
+- User interface:
+  - Tally Bridge root menu.
+  - Configuration menu.
+  - Operations menu.
+  - List views for configuration, mappings, and queue records.
+- Agent-facing API foundation:
+  - `GET /tally/pending` to fetch pending queue jobs.
+  - `POST /tally/result` to receive sync results from the local agent.
+  - Token validation using the `X-API-Token` request header.
+- Queue lifecycle baseline:
+  - `pending`
+  - `processing`
+  - `done`
+  - `failed`
+  - `dead`
+- Retry cron baseline to move failed queue items back to pending.
+- Sequence support for readable queue references.
+- Documentation/runbook explaining architecture, setup, API contract, and operating model.
+
+Phase 1A completion criteria:
+- Module installs successfully in Odoo 19.
+- Tally Bridge menus are visible after assigning user access.
+- Admin can create configuration and mapping records.
+- Queue records can be viewed from the UI.
+- Agent API endpoints exist and validate the configured token.
+
+### Phase 1B — Customer/Vendor Master Queue Hooks (**Next Delivery Scope**)
+
+Goal: start real Odoo-side event capture by creating queue jobs for customer and vendor masters.
+
+Scope:
+- Detect customer/vendor partner creation and relevant updates.
+- Create or refresh `tally.sync.queue` records for eligible partners.
+- Prepare customer/vendor payload JSON for the local agent.
+- Avoid duplicate queue jobs using `external_guid = res.partner:<id>`.
+- Validate the pending queue lifecycle from the Odoo UI/API.
+
+Tally credentials are **not required** for Phase 1B because this phase only prepares Odoo-side queue jobs. Tally connectivity becomes necessary when testing local-agent XML posting.
+
+### Phase 1C — Local Agent MVP
+
+Goal: create the first runnable local agent that connects the Odoo queue to TallyPrime.
+
+Scope:
+- Configure Odoo base URL and API token.
+- Poll `GET /tally/pending`.
+- Convert customer/vendor payloads into Tally ledger XML.
+- Post XML to TallyPrime at `http://localhost:9000`.
+- Report results to `POST /tally/result`.
+- Log request/response details for troubleshooting.
+
+### Phase 1D — Ledger and Tax Master Sync
+
+Goal: complete required master-data dependencies before transaction sync.
+
+Scope:
+- Queue hooks for ledgers and taxes.
+- Mapping rules for Tally ledger names, groups, and tax ledgers.
+- Agent XML conversion for ledger/tax masters.
+- Validation that masters are created/updated in Tally before vouchers are processed.
+
+### Phase 1E — Invoice and Bill Sync
+
+Goal: sync posted accounting documents from Odoo to Tally vouchers.
+
+Scope:
+- Sales invoice queue hooks.
+- Purchase bill queue hooks.
+- Credit note queue hooks.
+- Debit note queue hooks.
+- Voucher XML generation in the local agent.
+- Dependency validation for partner, ledger, and tax mappings.
+
+### Phase 1F — Payment Sync
+
+Goal: sync payment vouchers from Odoo to Tally.
+
+Scope:
+- Customer payment queue hooks.
+- Vendor payment queue hooks.
+- Bank/cash ledger mapping.
+- Payment XML generation in the local agent.
+- Reconciliation support between Odoo payments and Tally voucher references.
+
+### Phase 1G — Reliability, Reconciliation, and UAT Hardening
+
+Goal: make Phase 1 production-ready.
+
+Scope:
+- Retry threshold and dead-letter refinement.
+- Better locking/lease behavior for queue pickup.
+- Reprocess actions for failed/dead queue jobs.
+- Daily reconciliation reports.
+- Structured logs and operational dashboards.
+- UAT checklist and production rollout checklist.
+
+### Phase 2 — Optional Two-Way or Advanced Sync
+
+Goal: expand beyond the initial one-way Odoo-to-Tally flow only if business requires it.
+
+Possible scope:
+- Tally-to-Odoo status/reference import.
+- Balance or voucher reconciliation import.
+- Advanced conflict handling.
+- Multi-company/multi-Tally routing.
+- More detailed audit and approval workflows.
+
+---
+
+## 15) Post-Installation Next Steps for Phase 1A Archive
+
+After installing the **Tally Bridge** app in Odoo 19, complete and verify these items before archiving Phase 1A.
+
+### 15.1 Assign user access
+
+1. Open **Settings → Users & Companies → Users**.
+2. Select the integration/admin user.
+3. In **Access Rights**, assign one of the **Tally Bridge** roles:
+   - **Tally Bridge User** — can view sync queue records.
+   - **Tally Bridge Manager** — can configure the bridge, mappings, and queue.
+4. Save the user and refresh the browser if the menu is not immediately visible.
+
+### 15.2 Create the Tally Bridge configuration
+
+1. Open **Tally Bridge → Configuration → Configurations**.
+2. Create one active configuration for the company.
+3. Fill these values:
+   - **Company** — target Odoo company.
+   - **API Token** — shared secret used by the local agent in the `X-API-Token` header.
+   - **Agent URL** — local agent URL for reference/operations. A placeholder URL is acceptable for Phase 1A if the local agent is not built yet.
+   - **Batch Limit** — number of queue records returned per poll.
+   - **Retry Limit** — maximum retry count before manual handling.
+   - **Poll Interval** — expected agent polling frequency.
+
+### 15.3 Validate menus and access
+
+Verify these menus are visible for a Tally Bridge Manager:
+- **Tally Bridge → Configuration → Configurations**
+- **Tally Bridge → Configuration → Mappings**
+- **Tally Bridge → Operations → Sync Queue**
+
+### 15.4 Maintain initial mappings
+
+Open **Tally Bridge → Configuration → Mappings** and create placeholder or real mappings for masters that must match Tally naming exactly, such as:
+- Customer/vendor ledger names
+- Sales and purchase ledgers
+- Tax ledgers
+- Bank/cash ledgers
+- Tally groups where required
+
+### 15.5 Phase 1A archive checklist
+
+Archive Phase 1A when:
+- The module installs or upgrades without traceback.
+- User groups appear in the Odoo user access-rights screen.
+- Menus are visible for the configured user.
+- Configuration records can be created.
+- Mapping records can be created.
+- Queue list view opens successfully.
+- README documents the completed foundation and the remaining phases.
+
+---
+
+## 16) Phase 1B Current Notes
+
+Phase 1B starts the first functional sync capture layer for customers and vendors.
+
+Important note: Phase 1B does **not** require live Tally credentials. At this stage, the module only needs Odoo-side configuration and queue creation so records can be prepared for the local agent.
+
+Implemented/targeted in Phase 1B:
+- Customer and vendor contacts create/update a `tally.sync.queue` job.
+- Queue payloads include partner identity, role (`customer`/`vendor`), contact details, tax/VAT, and address data.
+- Existing partner queue jobs are refreshed instead of duplicated, using `external_guid = res.partner:<id>`.
+- A sequence is available for readable queue references.
+
+Tally connectivity is required later when validating the local agent and XML posting to TallyPrime.
+
+Phase 1B customer hook status:
+- Top-level `res.partner` customers (`customer_rank > 0`) are queued automatically after creation and after customer-facing field updates.
+- Customer payload snapshots include company, identity, contact details, address details, and the company-specific receivable account.
+- Queue creation is idempotent by `external_guid`, so later customer edits refresh the existing queue job and return it to `pending` for agent pickup.
 
 Phase 1B customer hook status:
 - Top-level `res.partner` customers (`customer_rank > 0`) are queued automatically after creation and after customer-facing field updates.
