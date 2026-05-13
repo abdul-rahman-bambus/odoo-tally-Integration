@@ -1,3 +1,5 @@
+import json
+
 from odoo import api, fields, models
 
 
@@ -42,3 +44,30 @@ class TallySyncQueue(models.Model):
             if vals.get("name", "New") == "New":
                 vals["name"] = self.env["ir.sequence"].next_by_code("tally.sync.queue") or "New"
         return super().create(vals_list)
+
+    @api.model
+    def enqueue_record(self, record, operation, payload):
+        company = (
+            record.company_id if "company_id" in record._fields else self.env.company
+        )
+        company = company or self.env.company
+        external_guid = f"{record._name}:{record.id}"
+        values = {
+            "company_id": company.id,
+            "odoo_model": record._name,
+            "record_id": record.id,
+            "operation": operation,
+            "external_guid": external_guid,
+            "payload_json": json.dumps(payload, sort_keys=True),
+            "state": "pending",
+            "next_retry_at": False,
+            "last_error": False,
+            "processed_at": False,
+            "tally_reference": False,
+            "attempt_count": 0,
+        }
+        existing = self.search([("external_guid", "=", external_guid)], limit=1)
+        if existing:
+            existing.write(values)
+            return existing
+        return self.create(values)
